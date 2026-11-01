@@ -1,0 +1,28 @@
+name: Compilar EBOOT
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar pl_mpeg.h
+        run: curl -L -o pl_mpeg.h https://raw.githubusercontent.com/phoboslab/pl_mpeg/master/pl_mpeg.h
+
+      - name: Compilar con pspdev
+        run: docker run --rm -v "$PWD:/src" pspdev/pspdev:latest sh -c "cd /src && make"
+
+      - name: Preparar carpeta final
+        run: |
+          sudo chown -R "$USER" .
+          mkdir -p out/MechaPlayer
+          cp EBOOT.PBP video.mpg out/MechaPlayer/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MechaPlayer
+          path: out
